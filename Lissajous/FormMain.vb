@@ -1,7 +1,6 @@
 ﻿Public Class FormMain
     Private Structure Settings
         Public AngleStep As Single
-        Public StepFactor As Single
         Public HPhase As Single
         Public VPhase As Single
 
@@ -52,7 +51,6 @@
 
     Private Sub LoadDefaults()
         ps.AngleStep = 0.02
-        ps.StepFactor = 1
         ps.HPhase = 0
         ps.VPhase = 0
         ps.LineColor = New Pen(Color.FromArgb(120, Color.Gray))
@@ -70,8 +68,8 @@
             vCircles.Clear()
 
             For i As Integer = 0 To (s - r) \ (r + m) - 1
-                hCircles.Add(New Circle(k + m * 2, m, r * 2, ps.HPhase))
-                vCircles.Add(New Circle(m, k + m * 2, r * 2, ps.VPhase))
+                hCircles.Add(New Circle(k + m * 2, m, r * 2, i + 1, ps.HPhase))
+                vCircles.Add(New Circle(m, k + m * 2, r * 2, i + 1, ps.VPhase))
                 k += r + m
             Next
 
@@ -104,18 +102,16 @@
             Next
 
             ' Draw lines
-            Dim k As Single = 1.0
             For i As Integer = 0 To hCircles.Count - 1
                 g.DrawLine(ps.LineColor,
                             hCircles(i).PointLocation.X, hCircles(i).PointLocation.Y,
                             hCircles(i).PointLocation.X, Me.DisplayRectangle.Height)
-                hCircles(i).Angle += ps.AngleStep * k
+                hCircles(i).Angle += ps.AngleStep
 
                 g.DrawLine(ps.LineColor,
                             vCircles(i).PointLocation.X, vCircles(i).PointLocation.Y,
                             Me.DisplayRectangle.Width, vCircles(i).PointLocation.Y)
-                vCircles(i).Angle += ps.AngleStep * k
-                k += ps.StepFactor
+                vCircles(i).Angle += ps.AngleStep
             Next
 
             ' Draw figures and remove duplicate points
@@ -128,8 +124,7 @@
                     Dim lp As PointF = points(points.Length - 1)
                     g.FillEllipse(Brushes.Blue, lp.X - 3, lp.Y - 3, 6, 6)
 
-                    ' FIXME: This doesn't work if stepFactor <> 1
-                    If ps.StepFactor = 1 AndAlso hCircles(0).Angle >= 2 * Math.PI Then figures(i).RemoveAt(0)
+                    If hCircles(0).Angle >= 2 * Math.PI Then figures(i).RemoveAt(0)
                 End If
             Next
         End SyncLock
