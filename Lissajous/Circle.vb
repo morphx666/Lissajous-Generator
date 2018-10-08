@@ -10,13 +10,15 @@
     Private mDiameter As Single
     Private mX As Single
     Private mY As Single
+    Private mRadius As Single
 
     Private ellipsePoints() As PointF
 
     Public Sub New(x As Single, y As Single, radius As Single, Optional frequency As Single = 1.0!, Optional phase As Single = 0.0!)
         mX = x
         mY = y
-        mDiameter = radius
+        mRadius = radius
+        mDiameter = radius * 2
         mPhase = phase
         Me.Frequency = frequency
         Me.Color = Color.White
@@ -64,13 +66,24 @@
         End Get
         Set
             mDiameter = Value
+            mRadius = mDiameter / 2
+            CreateEllipse()
+        End Set
+    End Property
+
+    Public Property Radius As Single
+        Get
+            Return mRadius
+        End Get
+        Set(value As Single)
+            mRadius = value
+            mDiameter = mRadius * 2
             CreateEllipse()
         End Set
     End Property
 
     Private Sub CreateEllipse()
-        Dim r As Single = Diameter / 2
-        Dim r2 As Single = r / 2
+        Dim r2 As Single = mRadius / 2
         Dim steps As Double = 0.1
         Dim pc As Double = Math.Ceiling(2 * Math.PI / steps)
         ReDim ellipsePoints(pc - (pc Mod 2))
@@ -83,15 +96,14 @@
     End Sub
 
     Public Sub Render(g As Graphics)
-        Dim r As Single = Diameter / 2
-        Dim r2 As Single = r / 2
+        Dim r2 As Single = mRadius ' / 2
 
         PointLocation = New PointF(X + r2 + CSng(r2 * Math.Cos(Angle * Frequency)),
                                    Y + r2 - CSng(r2 * Math.Sin(Angle * Frequency + Phase)))
 
         Using p As New Pen(Color)
             If Phase = 0 Then
-                g.DrawEllipse(p, X, Y, r, r)
+                g.DrawEllipse(p, X, Y, mDiameter, mDiameter)
             Else
                 g.DrawPolygon(p, ellipsePoints)
             End If

@@ -1,10 +1,14 @@
 ﻿Public Class FormMain
     Private Structure Settings
+        Public Radius As Single
+
         Public AngleStep As Single
         Public HPhase As Single
         Public VPhase As Single
 
         Public LineColor As Pen
+        Public FigureForeColor As Pen
+        Public FigurePointForeColor As SolidBrush
         Public FigureBackColor As SolidBrush
     End Structure
     Private ps As Settings
@@ -50,27 +54,30 @@
     End Sub
 
     Private Sub LoadDefaults()
+        ps.Radius = 50
         ps.AngleStep = 0.02
         ps.HPhase = 0
         ps.VPhase = 0
         ps.LineColor = New Pen(Color.FromArgb(120, Color.Gray))
+        ps.FigureForeColor = Pens.Cyan
+        ps.FigurePointForeColor = Brushes.Blue
         ps.FigureBackColor = New SolidBrush(Color.FromArgb(255, 22, 22, 22))
     End Sub
 
     Private Sub CreateCircles()
         SyncLock syncObj
             Dim s As Integer = Me.DisplayRectangle.Width
-            Dim r As Single = 200 / 2
-            Dim k As Single = r
+            Dim d As Single = ps.Radius * 2
+            Dim k As Single = d
             Dim m As Integer = 20
 
             hCircles.Clear()
             vCircles.Clear()
 
-            For i As Integer = 0 To (s - r) \ (r + m) - 1
-                hCircles.Add(New Circle(k + m * 2, m, r * 2, i + 1, ps.HPhase))
-                vCircles.Add(New Circle(m, k + m * 2, r * 2, i + 1, ps.VPhase))
-                k += r + m
+            For i As Integer = 0 To (s - ps.Radius) \ (ps.Radius + m) - 1
+                hCircles.Add(New Circle(k + m * 2, m, ps.Radius, i + 1, ps.HPhase))
+                vCircles.Add(New Circle(m, k + m * 2, ps.Radius, i + 1, ps.VPhase))
+                k += d + m
             Next
 
             figures = New List(Of List(Of PointF))
@@ -84,14 +91,14 @@
         SyncLock syncObj
             Dim index As Integer
 
-            ' Draw Circles and figures backgrounds
+            ' Draw Circles and figures' backgrounds
             For j As Integer = 0 To vCircles.Count - 1
                 For i As Integer = 0 To hCircles.Count - 1
                     index = i + j * hCircles.Count
 
                     g.FillRectangle(ps.FigureBackColor, hCircles(i).X,
                                                         vCircles(j).Y,
-                                                        hCircles(i).Diameter / 2, hCircles(i).Diameter / 2)
+                                                        hCircles(i).Diameter, hCircles(i).Diameter)
 
                     hCircles(i).Render(g)
                     vCircles(j).Render(g)
@@ -120,9 +127,9 @@
                     Dim points() As PointF = figures(i).ToArray()
                     If (points.Length Mod 2) = 0 Then ReDim Preserve points(points.Count - 1)
 
-                    g.DrawLines(Pens.Cyan, points)
+                    g.DrawLines(ps.FigureForeColor, points)
                     Dim lp As PointF = points(points.Length - 1)
-                    g.FillEllipse(Brushes.Blue, lp.X - 3, lp.Y - 3, 6, 6)
+                    g.FillEllipse(ps.FigurePointForeColor, lp.X - 3, lp.Y - 3, 6, 6)
 
                     If hCircles(0).Angle >= 2 * Math.PI Then figures(i).RemoveAt(0)
                 End If
