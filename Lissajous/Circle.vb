@@ -11,8 +11,10 @@
     Private mX As Single
     Private mY As Single
     Private mRadius As Single
+    Private mPointSize As Single
 
     Private ellipsePoints() As PointF
+    Private halfPointSize As Single
 
     Public Sub New(x As Single, y As Single, radius As Single, Optional frequency As Single = 1.0!, Optional phase As Single = 0.0!)
         mX = x
@@ -22,6 +24,7 @@
         mPhase = phase
         Me.Frequency = frequency
         Me.Color = Color.White
+        Me.PointSize = 6
 
         CreateEllipse()
     End Sub
@@ -47,6 +50,16 @@
         Set
             mY = Value
             CreateEllipse()
+        End Set
+    End Property
+
+    Public Property PointSize As Single
+        Get
+            Return mPointSize
+        End Get
+        Set(value As Single)
+            mPointSize = value
+            halfPointSize = value / 2
         End Set
     End Property
 
@@ -83,23 +96,21 @@
     End Property
 
     Private Sub CreateEllipse()
-        Dim r2 As Single = mRadius / 2
-        Dim steps As Double = 0.1
+        Dim steps As Double = 0.2 / If(Phase <> 0, Math.Abs(Phase * 10), 1)
         Dim pc As Double = Math.Ceiling(2 * Math.PI / steps)
-        ReDim ellipsePoints(pc - (pc Mod 2))
         Dim k As Integer = 0
+
+        ReDim ellipsePoints(pc - (pc Mod 2))
+
         For a As Double = 0 To 2 * Math.PI Step steps
-            ellipsePoints(k) = New PointF(X + r2 + CSng(r2 * Math.Cos(a * Frequency)),
-                                          Y + r2 - CSng(r2 * Math.Sin(a * Frequency + Phase)))
+            ellipsePoints(k) = ToCartesian(a)
             k += 1
         Next
+        ReDim Preserve ellipsePoints(k - 1)
     End Sub
 
     Public Sub Render(g As Graphics)
-        Dim r2 As Single = mRadius ' / 2
-
-        PointLocation = New PointF(X + r2 + CSng(r2 * Math.Cos(Angle * Frequency)),
-                                   Y + r2 - CSng(r2 * Math.Sin(Angle * Frequency + Phase)))
+        PointLocation = ToCartesian(Angle)
 
         Using p As New Pen(Color)
             If Phase = 0 Then
@@ -107,7 +118,14 @@
             Else
                 g.DrawPolygon(p, ellipsePoints)
             End If
-            g.FillEllipse(Brushes.White, PointLocation.X - 3, PointLocation.Y - 3, 6, 6)
+            g.FillEllipse(Brushes.White, PointLocation.X - halfPointSize,
+                                         PointLocation.Y - halfPointSize,
+                                         mPointSize, mPointSize)
         End Using
     End Sub
+
+    Private Function ToCartesian(angle As Single) As PointF
+        Return New PointF(X + mRadius + CSng(mRadius * Math.Cos(angle * Frequency)),
+                          Y + mRadius - CSng(mRadius * Math.Sin(angle * Frequency + Phase)))
+    End Function
 End Class
