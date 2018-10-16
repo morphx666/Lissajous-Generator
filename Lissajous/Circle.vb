@@ -1,5 +1,6 @@
 ﻿Public Class Circle
-    Private Const ToRad As Single = Math.PI / 180
+    Public Const ToRad As Single = Math.PI / 180
+    Public Const TwoPI As Single = 2 * Math.PI
 
     Public Property Angle As Single
     Public Property Color As Color
@@ -96,21 +97,21 @@
     End Property
 
     Private Sub CreateEllipse()
-        Dim steps As Double = 0.2 / If(Phase <> 0, Math.Abs(Phase * 10), 1)
-        Dim pc As Double = Math.Ceiling(2 * Math.PI / steps)
+        Dim steps As Double = 0.2
+        Dim pc As Double = Math.Ceiling(TwoPI / steps)
         Dim k As Integer = 0
 
         ReDim ellipsePoints(pc - (pc Mod 2))
 
-        For a As Double = 0 To 2 * Math.PI Step steps
-            ellipsePoints(k) = ToCartesian(a)
+        For a As Double = 0 To TwoPI Step steps
+            ellipsePoints(k) = ToCartesian(a, 1)
             k += 1
         Next
         ReDim Preserve ellipsePoints(k - 1)
     End Sub
 
     Public Sub Render(g As Graphics)
-        PointLocation = ToCartesian(Angle)
+        PointLocation = ToCartesian(Angle, Frequency)
 
         Using p As New Pen(Color)
             If Phase = 0 Then
@@ -124,8 +125,8 @@
         End Using
     End Sub
 
-    Private Function ToCartesian(angle As Single) As PointF
-        Return New PointF(X + mRadius + CSng(mRadius * Math.Cos(angle * Frequency)),
-                          Y + mRadius - CSng(mRadius * Math.Sin(angle * Frequency + Phase)))
+    Private Function ToCartesian(angle As Single, frequency As Single) As PointF
+        Return New PointF(X + mRadius + CSng(mRadius * Math.Cos(angle * frequency)),
+                          Y + mRadius - CSng(mRadius * Math.Sin(angle * frequency + Phase)))
     End Function
 End Class

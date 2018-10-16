@@ -70,13 +70,14 @@
             Dim d As Single = ps.Radius * 2
             Dim k As Single = d
             Dim m As Integer = 20
+            Dim m2 As Integer = m * 2
 
             hCircles.Clear()
             vCircles.Clear()
 
-            For i As Integer = 0 To (s - ps.Radius) \ (ps.Radius + m) - 1
-                hCircles.Add(New Circle(k + m * 2, m, ps.Radius, i + 1, ps.HPhase))
-                vCircles.Add(New Circle(m, k + m * 2, ps.Radius, i + 1, ps.VPhase))
+            For i As Integer = 1 To (s - ps.Radius) \ (ps.Radius + m)
+                hCircles.Add(New Circle(k + m2, m, ps.Radius, i, ps.HPhase))
+                vCircles.Add(New Circle(m, k + m2, ps.Radius, i, ps.VPhase))
                 k += d + m
             Next
 
@@ -131,7 +132,7 @@
                     Dim lp As PointF = points(points.Length - 1)
                     g.FillEllipse(ps.FigurePointForeColor, lp.X - 3, lp.Y - 3, 6, 6)
 
-                    If hCircles(0).Angle >= 2 * Math.PI Then figures(i).RemoveAt(0)
+                    If hCircles(0).Angle >= Circle.TwoPI Then figures(i).RemoveAt(0)
                 End If
             Next
         End SyncLock
